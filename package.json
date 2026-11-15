@@ -1,0 +1,13 @@
+{
+  "name": "@civ-clone/base-unit-action-sabotage-unit",
+  "version": "0.0.0",
+  "description": "The SabotageUnit unit action: a spy damages the lone unit of another player by a share of its hit points left, then escapes to its nearest city or is caught; with criteria for offering it.",
+  "repository": "git@github.com:civ-clone/base-unit-action-sabotage-unit.git",
+  "keywords": [
+    "typescript",
+    "civilization"
+  ],
+  "author": "dom111 <dom111@users.noreply.github.com>",
+  "license": "MIT",
+  "private": false
+}
