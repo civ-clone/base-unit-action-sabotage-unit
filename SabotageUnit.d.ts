@@ -16,9 +16,13 @@ export declare const halfRoundedDown: (hitPointsLeft: number) => number;
  * A spy sabotages the lone unit of another player on `to`, as OpenCiv2's `spy_unit_mission` does:
  * 1. the target takes `damage(hit points left)` more damage, and the `Sabotaged` rules run;
  * 2. the mission costs the spy `missionCost` moves;
- * 3. the spy tries to escape (OpenCiv2 `spy_try_escape`): with odds `n` from `escapeOdds` (below 2, a coin flip adds
- *    1), a roll of 0 to `n - 1` that isn't 0 escapes. An escaped spy goes to its player's nearest city, if it has one,
- *    with no moves left, and `escaped` is called; a spy that doesn't escape is destroyed.
+ * 3. the spy survives or not (base-unit-agent's `AgentSurvives`, `ORDINARY`); one that doesn't is destroyed. With no
+ *    `AgentSurvives` rule answering, the spy tries to escape with these options (base-unit-agent's `escape`, OpenCiv2
+ *    `spy_try_escape`): with odds `n` from `escapeOdds` (below 2, a coin flip adds 1), a roll of 0 to `n - 1` that
+ *    isn't 0 escapes. An escaped spy goes to its player's nearest city, if it has one, with no moves left, and `escaped`
+ *    is called.
+ *
+ * Before all that, the spy must survive a caught check (`AgentSurvives`, `CAUGHT_CHECK`), which passes with no rules.
  *
  * The damage never destroys the target: it leaves at least half its hit points.
  */
@@ -38,6 +42,5 @@ export declare class SabotageUnit extends Action {
     { damage, escapeOdds, escaped, missionCost }?: SabotageUnitOptions
   );
   perform(): void;
-  private escapes;
 }
 export default SabotageUnit;
