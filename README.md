@@ -19,7 +19,7 @@ then tries to escape (`spy_try_escape`).
   caught does no damage. A spy that is caught or doesn't survive goes to the `AgentLost` rules (with no city), then is
   destroyed by the target's player.
 - Options, each with Civ2's number as its default (`escapeOdds` and `escaped` only when no `AgentSurvives` rule answers): `damage` (half the hit points left, rounded down:
-  `halfRoundedDown`), `escapeOdds` (2; a ruleset doubles it for a veteran), `missionCost` (1 move), and `escaped` (none;
+  `halfRoundedDown`), `escapeOdds(spy, mode)` (`escapeOdds(mode, false)` from base-unit-agent: 2 for the default `ORDINARY` mode, 1 if a `MissionMode` rule makes it `HARD`; a ruleset doubles it for a veteran), `missionCost` (1 move), and `escaped` (none;
   Civ2 makes the spy a veteran).
 - `Rules/Sabotaged`: `Sabotaged(unit, by, action)`, run after the damage, for the client's notice. A rule of its own,
   as core-unit's `Damaged` is a battle's result.

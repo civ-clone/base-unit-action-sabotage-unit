@@ -2,6 +2,7 @@ import SabotageUnit, {
   SabotageUnitOptions,
   halfRoundedDown,
 } from '../SabotageUnit';
+import MissionMode from '@civ-clone/base-unit-agent/Rules/MissionMode';
 import AgentLost from '@civ-clone/base-unit-agent/Rules/AgentLost';
 import AgentSurvives from '@civ-clone/base-unit-agent/Rules/AgentSurvives';
 import { EscapeMode } from '@civ-clone/base-unit-agent/lib/escape';
@@ -311,6 +312,20 @@ describe('SabotageUnit', (): void => {
       expect(target.damage()).to.equal(3);
       expect(spy.moves().value()).to.equal(1);
     });
+  });
+
+  // `MissionMode` alone changes the default odds: a hard escape is 1, a coin flip that adds 1 (0.4), then a roll of
+  //  odds 2.
+  it('rolls with the odds for the resolved mode', (): void => {
+    const hard = setUp(),
+      ordinary = setUp();
+
+    hard.ruleRegistry.register(new MissionMode(new Effect(() => 1 as const)));
+    hard.sabotage([0.4, 0.6]);
+    ordinary.sabotage([0.6]);
+
+    expect(hard.destroyed).to.deep.equal([]);
+    expect(ordinary.destroyed).to.deep.equal([]);
   });
 
   describe('with `AgentSurvives` rules', (): void => {

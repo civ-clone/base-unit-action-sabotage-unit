@@ -1,13 +1,14 @@
 import { CityRegistry } from '@civ-clone/core-city/CityRegistry';
 import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
 import { UnitRegistry } from '@civ-clone/core-unit/UnitRegistry';
+import { EscapeMode } from '@civ-clone/base-unit-agent/lib/escape';
 import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
 import Tile from '@civ-clone/core-world/Tile';
 import Unit from '@civ-clone/core-unit/Unit';
 export interface SabotageUnitOptions {
   damage?: (hitPointsLeft: number) => number;
-  escapeOdds?: (spy: Unit) => number;
+  escapeOdds?: (spy: Unit, mode: EscapeMode) => number;
   escaped?: (spy: Unit, city: City | null) => void;
   missionCost?: number;
 }

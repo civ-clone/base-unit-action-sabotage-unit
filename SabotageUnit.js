@@ -28,7 +28,7 @@ exports.halfRoundedDown = halfRoundedDown;
  * The damage never destroys the target: it leaves at least half its hit points.
  */
 class SabotageUnit extends Action_1.default {
-    constructor(from, to, unit, ruleRegistry = RuleRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, cityRegistry = CityRegistry_1.instance, randomNumberGenerator = core_random_1.instance, { damage = exports.halfRoundedDown, escapeOdds = () => 2, escaped, missionCost = 1, } = {}) {
+    constructor(from, to, unit, ruleRegistry = RuleRegistry_1.instance, unitRegistry = UnitRegistry_1.instance, cityRegistry = CityRegistry_1.instance, randomNumberGenerator = core_random_1.instance, { damage = exports.halfRoundedDown, escapeOdds = (spy, mode) => (0, escape_1.escapeOdds)(mode, false), escaped, missionCost = 1, } = {}) {
         super(from, to, unit, ruleRegistry);
         this._cityRegistry = cityRegistry;
         this._options = { damage, escapeOdds, escaped, missionCost };
@@ -57,7 +57,7 @@ class SabotageUnit extends Action_1.default {
             action: this,
             cityRegistry: this._cityRegistry,
             escaped: this._options.escaped,
-            odds: (unit) => this._options.escapeOdds(unit),
+            odds: (unit, oddsMode) => this._options.escapeOdds(unit, oddsMode),
             randomNumberGenerator: this._randomNumberGenerator,
             ruleRegistry: this.ruleRegistry(),
         }))) {

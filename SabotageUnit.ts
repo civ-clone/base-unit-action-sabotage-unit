@@ -12,8 +12,10 @@ import {
 } from '@civ-clone/core-unit/UnitRegistry';
 import {
   CAUGHT_CHECK,
+  EscapeMode,
   ORDINARY,
   escape,
+  escapeOdds as defaultEscapeOdds,
 } from '@civ-clone/base-unit-agent/lib/escape';
 import Action from '@civ-clone/core-unit/Action';
 import City from '@civ-clone/core-city/City';
@@ -30,8 +32,9 @@ import { instance as randomNumberGeneratorInstance } from '@civ-clone/core-rando
 export interface SabotageUnitOptions {
   // The damage the target takes, given the hit points it has left. Civ2: half of them, rounded down.
   damage?: (hitPointsLeft: number) => number;
-  // The spy's escape odds `n`: it escapes unless a roll of 0 to `n - 1` is 0. Civ2: 2, doubled for a veteran.
-  escapeOdds?: (spy: Unit) => number;
+  // The spy's escape odds `n` for the resolved `mode` (`MissionMode`): it escapes unless a roll of 0 to `n - 1` is 0.
+  //  Default `escapeOdds(mode, false)` (base-unit-agent): 2 for `ORDINARY`, 1 for `HARD`; Civ2 doubles it for a veteran.
+  escapeOdds?: (spy: Unit, mode: EscapeMode) => number;
   // Called for a spy that escaped, with the city it escaped to, if any (Civ2: it becomes a veteran).
   escaped?: (spy: Unit, city: City | null) => void;
   // The moves the mission costs the spy. Civ2: 1.
@@ -74,7 +77,8 @@ export class SabotageUnit extends Action {
     randomNumberGenerator: () => number = randomNumberGeneratorInstance,
     {
       damage = halfRoundedDown,
-      escapeOdds = (): number => 2,
+      escapeOdds = (spy: Unit, mode: EscapeMode): number =>
+        defaultEscapeOdds(mode, false),
       escaped,
       missionCost = 1,
     }: SabotageUnitOptions = {}
@@ -130,7 +134,8 @@ export class SabotageUnit extends Action {
           action: this,
           cityRegistry: this._cityRegistry,
           escaped: this._options.escaped,
-          odds: (unit: Unit): number => this._options.escapeOdds(unit),
+          odds: (unit: Unit, oddsMode: EscapeMode): number =>
+            this._options.escapeOdds(unit, oddsMode),
           randomNumberGenerator: this._randomNumberGenerator,
           ruleRegistry: this.ruleRegistry(),
         })
