@@ -2,6 +2,10 @@ import SabotageUnit, {
   SabotageUnitOptions,
   halfRoundedDown,
 } from '../SabotageUnit';
+import MissionMode from '@civ-clone/base-unit-agent/Rules/MissionMode';
+import AgentLost from '@civ-clone/base-unit-agent/Rules/AgentLost';
+import AgentSurvives from '@civ-clone/base-unit-agent/Rules/AgentSurvives';
+import { EscapeMode } from '@civ-clone/base-unit-agent/lib/escape';
 import City from '@civ-clone/core-city/City';
 import CityRegistry from '@civ-clone/core-city/CityRegistry';
 import Criterion from '@civ-clone/core-rule/Criterion';
@@ -307,6 +311,95 @@ describe('SabotageUnit', (): void => {
 
       expect(target.damage()).to.equal(3);
       expect(spy.moves().value()).to.equal(1);
+    });
+  });
+
+  // `MissionMode` alone changes the default odds: a hard escape is 1, a coin flip that adds 1 (0.4), then a roll of
+  //  odds 2.
+  it('rolls with the odds for the resolved mode', (): void => {
+    const hard = setUp(),
+      ordinary = setUp();
+
+    hard.ruleRegistry.register(new MissionMode(new Effect(() => 1 as const)));
+    hard.sabotage([0.4, 0.6]);
+    ordinary.sabotage([0.6]);
+
+    expect(hard.destroyed).to.deep.equal([]);
+    expect(ordinary.destroyed).to.deep.equal([]);
+  });
+
+  describe('with `AgentSurvives` rules', (): void => {
+    const survives = (
+      set: ReturnType<typeof setUp>,
+      answer: (mode: EscapeMode) => boolean
+    ): EscapeMode[] => {
+      const asked: EscapeMode[] = [];
+
+      set.ruleRegistry.register(
+        new AgentSurvives(
+          new Effect((unit: Unit, mission: UnitAction, mode: EscapeMode) => {
+            expect(unit).to.equal(set.spy);
+            expect(mission).to.instanceOf(SabotageUnit);
+
+            asked.push(mode);
+
+            return answer(mode);
+          })
+        )
+      );
+
+      return asked;
+    };
+
+    it('asks the rules instead of rolling: a spy they keep stays, drawing nothing', (): void => {
+      const set = setUp(),
+        asked = survives(set, (): boolean => true);
+
+      set.sabotage([]);
+
+      expect(asked).to.deep.equal([-1, 0]);
+      expect(set.destroyed).to.deep.equal([]);
+      expect(set.target.damage()).to.equal(10);
+      expect(set.spy.tile()).to.equal(set.from);
+      expect(set.spy.moves().value()).to.equal(2);
+    });
+
+    it("reports and destroys a spy they don't keep, by the target's player", (): void => {
+      const set = setUp(),
+        lost: [City | null, boolean][] = [];
+
+      survives(set, (mode: EscapeMode): boolean => mode !== 0);
+      set.ruleRegistry.register(
+        new AgentLost(
+          new Effect(
+            (
+              unit: Unit,
+              city: City | null,
+              mission: UnitAction,
+              caught: boolean
+            ): void => {
+              lost.push([city, caught]);
+            }
+          )
+        )
+      );
+      set.sabotage([]);
+
+      expect(lost).to.deep.equal([[null, false]]);
+      expect(set.destroyed).to.deep.equal([[set.spy, set.enemy]]);
+      expect(set.sabotaged.length).to.equal(1);
+    });
+
+    it('destroys a spy that is caught before it does any damage', (): void => {
+      const set = setUp(),
+        asked = survives(set, (mode: EscapeMode): boolean => mode !== -1);
+
+      set.sabotage([]);
+
+      expect(asked).to.deep.equal([-1]);
+      expect(set.destroyed).to.deep.equal([[set.spy, set.enemy]]);
+      expect(set.target.damage()).to.equal(0);
+      expect(set.sabotaged).to.deep.equal([]);
     });
   });
 });
