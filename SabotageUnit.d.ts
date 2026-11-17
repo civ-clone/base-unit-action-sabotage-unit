@@ -22,7 +22,9 @@ export declare const halfRoundedDown: (hitPointsLeft: number) => number;
  *    isn't 0 escapes. An escaped spy goes to its player's nearest city, if it has one, with no moves left, and `escaped`
  *    is called.
  *
- * Before all that, the spy must survive a caught check (`AgentSurvives`, `CAUGHT_CHECK`), which passes with no rules.
+ * Before all that, `MissionMode` resolves the escape mode (default `ORDINARY`), and the spy must survive a caught check
+ * (`AgentSurvives`, `CAUGHT_CHECK`), which passes with no rules. A spy that is caught, or doesn't survive the mission,
+ * goes to the `AgentLost` rules (with no city) and is destroyed by the target's player.
  *
  * The damage never destroys the target: it leaves at least half its hit points.
  */

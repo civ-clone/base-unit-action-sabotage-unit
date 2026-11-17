@@ -14,8 +14,10 @@ then tries to escape (`spy_try_escape`).
      it has one, with no moves left (the `Moved` rules run for it), and `escaped(spy, city)` is called. A spy that
      doesn't survive is destroyed, by the target's player.
 
-  Before all that the spy must survive a caught check (`AgentSurvives` with `CAUGHT_CHECK`), which passes with no
-  rules; a spy that is caught is destroyed by the target's player and does no damage.
+  Before all that, `MissionMode` resolves the escape mode (default `ORDINARY`, which the fallback roll uses too) and
+  the spy must survive a caught check (`AgentSurvives` with `CAUGHT_CHECK`), which passes with no rules; a spy that is
+  caught does no damage. A spy that is caught or doesn't survive goes to the `AgentLost` rules (with no city), then is
+  destroyed by the target's player.
 - Options, each with Civ2's number as its default (`escapeOdds` and `escaped` only when no `AgentSurvives` rule answers): `damage` (half the hit points left, rounded down:
   `halfRoundedDown`), `escapeOdds` (2; a ruleset doubles it for a veteran), `missionCost` (1 move), and `escaped` (none;
   Civ2 makes the spy a veteran).

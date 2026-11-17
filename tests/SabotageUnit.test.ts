@@ -2,6 +2,7 @@ import SabotageUnit, {
   SabotageUnitOptions,
   halfRoundedDown,
 } from '../SabotageUnit';
+import AgentLost from '@civ-clone/base-unit-agent/Rules/AgentLost';
 import AgentSurvives from '@civ-clone/base-unit-agent/Rules/AgentSurvives';
 import { EscapeMode } from '@civ-clone/base-unit-agent/lib/escape';
 import City from '@civ-clone/core-city/City';
@@ -348,12 +349,28 @@ describe('SabotageUnit', (): void => {
       expect(set.spy.moves().value()).to.equal(2);
     });
 
-    it("destroys a spy they don't keep, by the target's player", (): void => {
-      const set = setUp();
+    it("reports and destroys a spy they don't keep, by the target's player", (): void => {
+      const set = setUp(),
+        lost: [City | null, boolean][] = [];
 
       survives(set, (mode: EscapeMode): boolean => mode !== 0);
+      set.ruleRegistry.register(
+        new AgentLost(
+          new Effect(
+            (
+              unit: Unit,
+              city: City | null,
+              mission: UnitAction,
+              caught: boolean
+            ): void => {
+              lost.push([city, caught]);
+            }
+          )
+        )
+      );
       set.sabotage([]);
 
+      expect(lost).to.deep.equal([[null, false]]);
       expect(set.destroyed).to.deep.equal([[set.spy, set.enemy]]);
       expect(set.sabotaged.length).to.equal(1);
     });

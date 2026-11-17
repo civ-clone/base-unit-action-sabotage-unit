@@ -21,7 +21,9 @@ exports.halfRoundedDown = halfRoundedDown;
  *    isn't 0 escapes. An escaped spy goes to its player's nearest city, if it has one, with no moves left, and `escaped`
  *    is called.
  *
- * Before all that, the spy must survive a caught check (`AgentSurvives`, `CAUGHT_CHECK`), which passes with no rules.
+ * Before all that, `MissionMode` resolves the escape mode (default `ORDINARY`), and the spy must survive a caught check
+ * (`AgentSurvives`, `CAUGHT_CHECK`), which passes with no rules. A spy that is caught, or doesn't survive the mission,
+ * goes to the `AgentLost` rules (with no city) and is destroyed by the target's player.
  *
  * The damage never destroys the target: it leaves at least half its hit points.
  */
@@ -40,8 +42,9 @@ class SabotageUnit extends Action_1.default {
         if (!target) {
             return;
         }
-        if (!(0, mission_1.agentSurvives)(spy, this, escape_1.CAUGHT_CHECK, this.ruleRegistry())) {
-            spy.destroy(target.player());
+        const mode = (0, mission_1.missionMode)(spy, this, escape_1.ORDINARY, this.ruleRegistry());
+        if (!(0, mission_1.agentSurvives)(spy, this, escape_1.CAUGHT_CHECK, this.ruleRegistry(), undefined, mode)) {
+            (0, mission_1.loseAgent)(spy, null, this, true, this.ruleRegistry(), target.player());
             return;
         }
         const [hitPointsLeft] = target.hitPoints();
@@ -50,7 +53,7 @@ class SabotageUnit extends Action_1.default {
         spy
             .moves()
             .set(Math.max(0, spy.moves().value() - this._options.missionCost));
-        if (!(0, mission_1.agentSurvives)(spy, this, escape_1.ORDINARY, this.ruleRegistry(), () => (0, escape_1.escape)(spy, escape_1.ORDINARY, {
+        if (!(0, mission_1.agentSurvives)(spy, this, mode, this.ruleRegistry(), () => (0, escape_1.escape)(spy, mode, {
             action: this,
             cityRegistry: this._cityRegistry,
             escaped: this._options.escaped,
@@ -58,7 +61,7 @@ class SabotageUnit extends Action_1.default {
             randomNumberGenerator: this._randomNumberGenerator,
             ruleRegistry: this.ruleRegistry(),
         }))) {
-            spy.destroy(target.player());
+            (0, mission_1.loseAgent)(spy, null, this, false, this.ruleRegistry(), target.player());
         }
     }
 }
